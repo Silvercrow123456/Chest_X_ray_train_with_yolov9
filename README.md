@@ -32,7 +32,7 @@ train_dir = '/content/gdrive/MyDrive/training_data/train'
 train_df = pd.read_csv('/content/gdrive/MyDrive/training_data/train.csv')
 train_df.head(2)
 ```
-
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form1.png)
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
 ```
