@@ -51,12 +51,40 @@ train_df = train_df[train_df['class_name'] != 'No finding'].reset_index(drop=Tru
 # Select only required columns
 train_df = train_df[['ImagePath', 'image_id', 'class_name', 'class_id', 'x_min', 'y_min', 'x_max', 'y_max']]
 ```
-Visualize training dataframe
+Visualize training dataframe, this block is elective
 ```
 print("No Of The Unique ImagePath :--->", len(set(train_df['ImagePath'])))
 print("Shape Of The Data Frame :->", train_df.shape)
 train_df.head(2)
 ```
+！[image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form2.png)
+```
+png_paths =  list(set(train_df['ImagePath'])) #-> this move is important
+
+#Turn pngs to numpy array so we can better transfer then to our virtual machine data folder
+from numpy import asarray
+def png2array(path):
+
+    img = Image.open(path)
+    numpydata = asarray(img)
+    return numpydata
+
+#This function is elective
+def plot_imgs(imgs, cols=4, size=7, is_rgb=True, title="", cmap='gray', img_size=(500,500)):
+    rows = len(imgs)//cols + 1
+    fig = plt.figure(figsize=(cols*size, rows*size))
+    for i, img in enumerate(imgs):
+        if img_size is not None:
+            img = cv2.resize(img, img_size)
+        fig.add_subplot(rows, cols, i+1)
+        plt.imshow(img, cmap=cmap)
+    plt.suptitle(title)
+    plt.show()
+
+imgs = [png2array(path) for path in png_paths[:4]]
+plot_imgs(imgs)
+```
+
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
 ```
