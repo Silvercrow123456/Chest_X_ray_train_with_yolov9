@@ -13,7 +13,7 @@ First, we have to mount our drive to the colab
 from google.colab import drive
 drive.mount('/content/gdrive')
 ```
-Import helpful packages
+Import helpful packages and link google drive to our virtual machine
 ```
 import cv2
 from PIL import Image
@@ -50,6 +50,12 @@ train_df = train_df[train_df['class_name'] != 'No finding'].reset_index(drop=Tru
 
 # Select only required columns
 train_df = train_df[['ImagePath', 'image_id', 'class_name', 'class_id', 'x_min', 'y_min', 'x_max', 'y_max']]
+```
+Visualize training dataframe
+```
+print("No Of The Unique ImagePath :--->", len(set(train_df['ImagePath'])))
+print("Shape Of The Data Frame :->", train_df.shape)
+train_df.head(2)
 ```
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
