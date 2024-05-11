@@ -5,10 +5,13 @@ In the repo, we are going to train yolov9 to make diagnosis on a plain film CXR
 
 First, you can download ChestX‐Det10, a subset of NIH ChestX‐14 from [this website](https://github.com/Deepwise-AILab/ChestX-Det10-Dataset).
 Then, we have to convert the .json file to .xlsx file through [this website](https://data.page/json/csv) so that we can modify the content.
+Upload the dataconvert.py and train.xlsx (raw data) to colab virtual machine. Use the following code, we will have the prepared format of train.xlsx
 ```
-!python 
+!python dataconvert.py
 ```
-After converting the train.xlsx to .csv through [this website](https://cloudconvert.com/xlsx-converter), we can upload the images and labels to our google cloud. I created a folder called training_data
+After converting the train.xlsx to .csv through [this website](https://cloudconvert.com/xlsx-converter), we can upload the images and labels to our google cloud. I created a folder called training_data. The structure should look like below:
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/cloud_structure.png)
+
 ## Loading needed images(with abnormal findings) into virtual machine data folder
 ### Mount our drive to the colab
 ```
