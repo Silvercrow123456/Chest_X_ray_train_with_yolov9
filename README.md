@@ -7,13 +7,13 @@ Then, we have to convert the .json file to .xlsx file through [this website](htt
 !python 
 ```
 After converting the train.xlsx to .csv through [this website](https://cloudconvert.com/xlsx-converter), we can upload the images and labels to our google cloud. I created a folder called training_data
-## Data pre-processing
-First, we have to mount our drive to the colab
+## Loading needed images(with findings) into virtual machine data folder
+### Mount our drive to the colab
 ```
 from google.colab import drive
 drive.mount('/content/gdrive')
 ```
-Import helpful packages and link google drive to our virtual machine
+### Import helpful packages and link google drive to our virtual machine
 ```
 import cv2
 from PIL import Image
@@ -34,7 +34,7 @@ train_df = pd.read_csv('/content/gdrive/MyDrive/training_data/train.csv')
 train_df.head(2)
 ```
 ![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form1.png)
-mapping image_id to its image_path
+### Mapping image_id to its image_path
 ```
 # Enable pandas progress_apply
 tqdm.pandas()
@@ -51,8 +51,9 @@ train_df = train_df[train_df['class_name'] != 'No finding'].reset_index(drop=Tru
 # Select only required columns
 train_df = train_df[['ImagePath', 'image_id', 'class_name', 'class_id', 'x_min', 'y_min', 'x_max', 'y_max']]
 ```
-Visualize training dataframe, this block is elective
+### Visualize training dataframe
 ```
+# this block is elective
 print("No Of The Unique ImagePath :--->", len(set(train_df['ImagePath'])))
 print("Shape Of The Data Frame :->", train_df.shape)
 train_df.head(2)
@@ -84,7 +85,58 @@ def plot_imgs(imgs, cols=4, size=7, is_rgb=True, title="", cmap='gray', img_size
 imgs = [png2array(path) for path in png_paths[:4]]
 plot_imgs(imgs)
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/CXRs.png)
+Function to save the image in a slower way
+```
+from skimage import exposure
 
+def saving_image(output_dir, png_path_list):
+    for png_path in tqdm(png_path_list):
+        file_name = os.path.basename(png_path).split('.')[0]
+        image_array = png2array(png_path)
+        cv2.imwrite(os.path.join(output_dir, f"{file_name}.png"), image_array)
+```
+Use MultiThreading to Process and save the image in a faster way
+```
+Not yet upload
+```
+### Create data folder CXR and load traing images into subfolder "train"
+```
+output_dir = "/content/CXR/train"
+os.makedirs(output_dir, exist_ok=True)
+
+# Call the function to save images
+saving_image(output_dir, png_paths)
+```
+### Load testing images into subfolder "test"
+```
+test_png_paths = glob.glob("/content/gdrive/MyDrive/training_data/test/*")
+
+output_dir = "/content/CXR/test"
+os.makedirs(output_dir, exist_ok=True)
+
+# Call the function to save images
+saving_image(output_dir, test_png_paths)
+```
+Check if the images is successfully loading into the content/CXR/train folder
+```
+yy = glob.glob("/content/CXR/train/*") ## SaveImagePath
+array = cv2.imread(yy[2])
+plt.imshow(array)
+```
+## Generate coco style labels with normalized bounding boxes
+Get image sizes
+```
+heights = []
+widths =  []
+
+# Use list comprehensions for a more concise and efficient code
+heights = [cv2.imread(i).shape[0] for i in tqdm(yy)]
+widths = [cv2.imread(i).shape[1] for i in tqdm(yy)]
+
+print("Height is ", heights[:3])
+print("width is ", widths[:3])
+```
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
 ```
