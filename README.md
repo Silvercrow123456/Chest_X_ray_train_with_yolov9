@@ -392,6 +392,7 @@ list(dict_.values())
  'Fracture',
  'Pneumothorax',
  'Mass']
+ 
  That is not the same order as I originally set, thats because we didn't store the item in the order of their correlated numbers. So, we have to re-order it or the model will give the bounding box a wrong name! Try the following code
 ```
 dd2 = dict(sorted(dict_.items(), key=lambda key_val: key_val[0]))
@@ -441,3 +442,60 @@ with open(yaml_dir+'/data.yaml', 'w') as file:
 --cfg models/detect/gelan-c.yaml \
 --hyp hyp.scratch-high.yaml
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/start_training.png)
+## Examine The Training Result:
+### General training process
+```
+from IPython.display import Image
+Image(filename=f"{HOME}/yolov9/runs/train/exp/results.png", width=700)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/result.png)
+### Confusion matrix according to different item
+```
+from IPython.display import Image
+Image(filename=f"{HOME}/yolov9/runs/train/exp/confusion_matrix.png", width=1000)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/matrix.png)
+### Predictions on validation data
+```
+from IPython.display import Image
+Image(filename=f"{HOME}/yolov9/runs/train/exp/val_batch0_pred.jpg", width=1000)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/pred.jpg)
+## Now We Will Validate Our Custom Model
+```
+%cd /content/yolov9
+
+!python val.py \
+--img 640 --batch 8 --conf 0.001 --iou 0.7 --device 0 \
+--data /content/yolov9/dataset/data.yaml \
+--weights {HOME}/yolov9/runs/train/exp/weights/best.pt
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/val.png)
+### Plot R curve
+```
+from IPython.display import Image
+Image(filename=f"{HOME}/yolov9/runs/val/exp/R_curve.png", width=700)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/R_curve.png)
+```
+from IPython.display import Image
+Image(filename=f"{HOME}/yolov9/runs/val/exp/val_batch0_pred.jpg", width=700)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/result/pred2.jpg)
+### Try predicting another image using the following code
+```
+!python detect.py --weights {HOME}/yolov9/runs/train/exp/weights/best.pt --conf 0.1 --source '(your image path)' --device 0
+```
+## Citation
+```
+@misc{liu2020chestxdet10,
+     title={ChestX-Det10: Chest X-ray Dataset on Detection of Thoracic Abnormalities},
+     author={Jingyu Liu and Jie Lian and Yizhou Yu},
+     year={2020},
+     eprint={2006.10550v3},
+     archivePrefix={arXiv},
+     primaryClass={eess.IV}
+}
+```
+## Thanks for watching and learning, wish you a progress in machine learning
