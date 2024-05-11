@@ -22,6 +22,7 @@ import os
 import random
 import shutil
 from glob import glob
+import glob
 from tqdm import tqdm
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,6 +34,23 @@ train_df = pd.read_csv('/content/gdrive/MyDrive/training_data/train.csv')
 train_df.head(2)
 ```
 ![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form1.png)
+mapping image_id to its image_path
+```
+# Enable pandas progress_apply
+tqdm.pandas()
+
+# Load the list of training DICOM images
+yy = glob.glob(train_dir + "/*")
+
+# Apply progress_apply to create the 'ImagePath' column
+train_df['ImagePath'] = train_df['image_id'].progress_apply(lambda x: next(filter(lambda y: x in y, yy), None))
+
+# Filter out the 'No Finding' class (class_id == 14)
+train_df = train_df[train_df['class_name'] != 'No finding'].reset_index(drop=True)
+
+# Select only required columns
+train_df = train_df[['ImagePath', 'image_id', 'class_name', 'class_id', 'x_min', 'y_min', 'x_max', 'y_max']]
+```
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
 ```
