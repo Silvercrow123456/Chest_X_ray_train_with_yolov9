@@ -7,13 +7,13 @@ Then, we have to convert the .json file to .xlsx file through [this website](htt
 !python 
 ```
 After converting the train.xlsx to .csv through [this website](https://cloudconvert.com/xlsx-converter), we can upload the images and labels to our google cloud. I created a folder called training_data
-## Loading needed images(with findings) into virtual machine data folder
+## Loading needed images(with abnormal findings) into virtual machine data folder
 ### Mount our drive to the colab
 ```
 from google.colab import drive
 drive.mount('/content/gdrive')
 ```
-### Import helpful packages and link google drive to our virtual machine
+### Import helpful packages and create links to our virtual machine
 ```
 import cv2
 from PIL import Image
@@ -51,14 +51,15 @@ train_df = train_df[train_df['class_name'] != 'No finding'].reset_index(drop=Tru
 # Select only required columns
 train_df = train_df[['ImagePath', 'image_id', 'class_name', 'class_id', 'x_min', 'y_min', 'x_max', 'y_max']]
 ```
-### Visualize training dataframe
+Visualize training dataframe
 ```
 # this block is elective
 print("No Of The Unique ImagePath :--->", len(set(train_df['ImagePath'])))
 print("Shape Of The Data Frame :->", train_df.shape)
 train_df.head(2)
 ```
-！[image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form2.png)
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/form2.png)
+### Function to save the images
 ```
 png_paths =  list(set(train_df['ImagePath'])) #-> this move is important
 
@@ -86,7 +87,7 @@ imgs = [png2array(path) for path in png_paths[:4]]
 plot_imgs(imgs)
 ```
 ![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/CXRs.png)
-Function to save the image in a slower way
+Slower way
 ```
 from skimage import exposure
 
@@ -124,8 +125,9 @@ yy = glob.glob("/content/CXR/train/*") ## SaveImagePath
 array = cv2.imread(yy[2])
 plt.imshow(array)
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/CXRs_in_folder.png)
 ## Generate coco style labels with normalized bounding boxes
-Get image sizes
+### Get image sizes
 ```
 heights = []
 widths =  []
@@ -137,6 +139,23 @@ widths = [cv2.imread(i).shape[1] for i in tqdm(yy)]
 print("Height is ", heights[:3])
 print("width is ", widths[:3])
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/height_width.png)
+### Creating Dataframe which will contain the columns SaveImagePath , heights and width
+```
+# Now Creating Data Frame For The Height ,Width
+df = pd.DataFrame(yy, columns =['SaveImagePath'])
+df['image_id'] = df['SaveImagePath'].apply(lambda x: x.split('/')[-1].split('.')[0]) +'.png' # WT shit???
+df['Height'] = heights
+df['Width']  = widths
+
+print("shape Of The Data Frame :->", df.shape)
+print("shape of the train_df", train_df.shape)
+
+# Merge the 'df' data frame and merge it with the original one 
+final_df  = train_df.merge(df, on = 'image_id')
+final_df.head(2)
+```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/merged_data_form.png)
 ## Training Custom Model
 ### Cloning Yolo V9 From Github
 ```
