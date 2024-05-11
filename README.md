@@ -87,7 +87,7 @@ imgs = [png2array(path) for path in png_paths[:4]]
 plot_imgs(imgs)
 ```
 ![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/CXRs.png)
-Slower way
+In a slower way
 ```
 from skimage import exposure
 
