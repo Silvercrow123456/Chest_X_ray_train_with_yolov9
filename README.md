@@ -199,6 +199,7 @@ for file in tqdm(yy):
                 width, height = row["normalized_width"], row['normalized_height']
                 f.write(f"{class_id}\t{x_center}\t{y_center}\t{width}\t{height}\n")
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/create_label.png)
 ### Finally We Have store Images and Labels in the CXR folder~ 
 ```
 #you can use the following code to store the labels into our google cloud so you don't have to re-create labels again next time
@@ -218,6 +219,7 @@ with open(label_files[0]) as f:
 dict_ = dict(zip(df_yolo['class_id'], df_yolo['class_name']))
 print(dict_)
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/dict.png)
 ### Plot bounding box on CXRs
 Now if you run the following code, you will found that images and labels are stored in a different order
 ```
@@ -296,8 +298,8 @@ img_no = 44
 main(df.image_files[img_no], df.label_files[img_no], class_dict = dict_)
 ```
 ![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/reshape4.png)
-### This df is the actual train_data. From this we will create train(2301 images) and valid(19 image)
-the ratio of train and valid can be customerized
+### Split df into train and valid
+This df is the actual train_data. From this we will create train(2301 images) and valid(19 image). The ratio of train and valid can be customerized
 ```
 from sklearn.model_selection import train_test_split
 df_train, df_valid = train_test_split(df, test_size = 19 , random_state = 42)
@@ -359,10 +361,83 @@ os.chdir(HOME)
 %cd yolov9
 !pip install -r requirements.txt
 ```
+![image](https://github.com/Silvercrow123456/Chest_X_ray_train_with_yolov9/blob/main/Illustrations/yolov9.png)
 ### Downloading Model Weights
 ```
 !wget -P {HOME}/weights -q https://github.com/WongKinYiu/yolov9/releases/download/v0.1/yolov9-c.pt
 !wget -P {HOME}/weights -q https://github.com/WongKinYiu/yolov9/releases/download/v0.1/yolov9-e.pt
 !wget -P {HOME}/weights -q https://github.com/WongKinYiu/yolov9/releases/download/v0.1/gelan-c.pt
 !wget -P {HOME}/weights -q https://github.com/WongKinYiu/yolov9/releases/download/v0.1/gelan-e.pt
+```
+### Shift dataset from content to yolov9 folder
+```
+import shutil
+
+# Move the dataset folder to the Yolo folder
+dataset_dir = "/content/dataset"
+yolo_dir = "/content/yolov9"
+shutil.move(dataset_dir, yolo_dir)
+```
+At last, let check the item we care going to detect on the CXR images
+```
+list(dict_.values())
+```
+['Nodule',
+ 'Consolidation',
+ 'Effusion',
+ 'Fibrosis',
+ 'Emphysema',
+ 'Calcification',
+ 'Atelectasis',
+ 'Fracture',
+ 'Pneumothorax',
+ 'Mass']
+ That is not the same order as I originally set, thats because we didn't store the item in the order of their correlated numbers. So, we have to re-order it or the model will give the bounding box a wrong name! Try the following code
+```
+dd2 = dict(sorted(dict_.items(), key=lambda key_val: key_val[0]))
+```
+Now print the "dict" again and you will find them in a right order
+```
+list(dict_.values())
+```
+['Nodule',
+ 'Consolidation',
+ 'Effusion',
+ 'Fibrosis',
+ 'Emphysema',
+ 'Atelectasis',
+ 'Fracture',
+ 'Pneumothorax',
+ 'Mass',
+ 'Calcification']
+## Create the yaml file and start training
+You can also download my yaml if you just want to see how much can yolov9 achieve
+```
+yaml_dir = "/content/yolov9/dataset"
+print("Yaml Directory Is :--->", yaml_dir)
+import yaml
+
+# Data to write to YAML file
+data = {
+    'names': list(dd2.values()),
+    'nc': len(list(dd2.values())),
+
+    'train': 'dataset/train_aug/images/',
+    'val': 'dataset/valid/images/'
+}
+
+# Write data to YAML file
+with open(yaml_dir+'/data.yaml', 'w') as file:
+    yaml.dump(data, file)
+```
+### We use the pre-trained weight galen-c
+```
+%cd /content/yolov9
+
+!python train.py \
+--batch 16 --epochs 30 --img 640 --device 0 --min-items 0 --close-mosaic 15 \
+--data /content/yolov9/dataset/data.yaml \
+--weights {HOME}/weights/gelan-c.pt \
+--cfg models/detect/gelan-c.yaml \
+--hyp hyp.scratch-high.yaml
 ```
