@@ -1,0 +1,14 @@
+names:
+- Nodule
+- Consolidation
+- Effusion
+- Fibrosis
+- Emphysema
+- Atelectasis
+- Fracture
+- Pneumothorax
+- Mass
+- Calcification
+nc: 10
+train: dataset/train_aug/images/
+val: dataset/valid/images/
